@@ -1,73 +1,101 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Riwayat Job Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Riwayat Job Dashboard (HTML)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .modal-bg { background: rgba(0,0,0,0.2); }
-    .row-alt:nth-child(even) { background-color: #f9fafb; }
-    .icon-btn { cursor:pointer; transition:0.2s; }
-    .icon-btn:hover { transform:scale(1.1); }
+    :root {
+      --ui-scale: 1;
+    }
+    body { transform: scale(var(--ui-scale)); transform-origin: top left; }
+    .modal-bg { background: rgba(0,0,0,0.18); }
+    .row-alt:nth-child(even) { background-color: #fbfdff; }
+    .icon-btn { cursor:pointer; transition: 0.15s; user-select: none; }
+    .icon-btn:hover { transform: scale(1.08); }
+    .small-muted { font-size: 0.85rem; color: #6b7280; }
+    /* make table overflow-friendly on small screens */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* small adjustments */
+    .clickable { cursor: pointer; }
   </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-white to-pink-50 min-h-screen p-6">
+<body class="bg-gradient-to-br from-blue-50 via-white to-pink-50 min-h-screen p-5">
 
   <div class="max-w-6xl mx-auto">
-    <header class="text-center mb-6">
+    <header class="mb-6 text-center">
       <h1 class="text-3xl font-bold">📋 Riwayat Job</h1>
-      <p class="text-gray-500 text-sm">Klik nama untuk buka detail job — semua tersimpan otomatis</p>
+      <p class="small-muted mt-1">Dashboard sederhana — tambah orang, tambah job, total otomatis, gampang dipakai</p>
     </header>
 
     <!-- DASHBOARD -->
     <section id="dashboard">
-      <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8"></div>
+      <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6"></div>
+      <div class="text-xs text-gray-500 text-center mb-6">Klik nama untuk buka detail job — Hapus butuh sandi admin</div>
     </section>
 
     <!-- JOB PAGE -->
     <section id="jobPage" class="hidden">
-      <div class="flex justify-between items-center mb-4">
-        <div class="flex items-center gap-2">
-          <button id="backBtn" class="text-sm border px-3 py-1 rounded">⬅️ Kembali</button>
-          <h2 id="personName" class="text-xl font-semibold"></h2>
-        </div>
+      <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-3">
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2">
-            <span id="totalFee" class="text-gray-700 font-medium"></span>
-            <span id="addJobIcon" class="text-2xl text-green-600 icon-btn">➕</span>
+          <button id="backBtn" class="text-sm border px-3 py-1 rounded">⬅️ Kembali</button>
+          <div>
+            <h2 id="personName" class="text-xl font-semibold"></h2>
+            <div id="personMeta" class="small-muted"></div>
           </div>
-          <span id="deletePerson" class="text-xl text-red-500 icon-btn">🗑️</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 bg-white px-3 py-1 rounded shadow-sm">
+            <div id="totalAll" class="font-medium text-gray-700">Total: Rp 0</div>
+            <span id="addJobIcon" title="Tambah job" class="text-2xl text-green-600 icon-btn">➕</span>
+          </div>
+
+          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded shadow-sm">
+            <button id="zoomOut" class="px-2 py-1 border rounded text-sm">-</button>
+            <div class="px-3 text-sm">Zoom</div>
+            <button id="zoomIn" class="px-2 py-1 border rounded text-sm">+</button>
+            <button id="zoomReset" class="px-2 py-1 border rounded text-sm">Reset</button>
+          </div>
+
+          <span id="deletePerson" title="Hapus orang" class="text-xl text-red-500 icon-btn">🗑️</span>
         </div>
       </div>
 
-      <div class="overflow-x-auto bg-white rounded-lg shadow p-4">
-        <table class="min-w-full text-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="px-3 py-2 text-left">No</th>
-              <th class="px-3 py-2 text-left">Tanggal</th>
-              <th class="px-3 py-2 text-left">Sosmed</th>
-              <th class="px-3 py-2 text-left">Jumlah Akun</th>
-              <th class="px-3 py-2 text-left">Nama Job</th>
-              <th class="px-3 py-2 text-left">Link Job</th>
-              <th class="px-3 py-2 text-left">Fee</th>
-              <th class="px-3 py-2 text-left">Konfirmasi</th>
-              <th class="px-3 py-2 text-left">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="jobTable"></tbody>
-        </table>
+      <div class="overflow-hidden bg-white rounded-lg shadow p-3">
+        <div class="table-wrap">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-100 sticky top-0">
+              <tr>
+                <th class="px-3 py-2 text-left">No</th>
+                <th class="px-3 py-2 text-left">Tanggal</th>
+                <th class="px-3 py-2 text-left">Sosmed</th>
+                <th class="px-3 py-2 text-left">Akun</th>
+                <th class="px-3 py-2 text-left">Job</th>
+                <th class="px-3 py-2 text-left">Link</th>
+                <th class="px-3 py-2 text-left">Group WA</th>
+                <th class="px-3 py-2 text-left">Handle</th>
+                <th class="px-3 py-2 text-left">Fee</th>
+                <th class="px-3 py-2 text-left">Total</th>
+                <th class="px-3 py-2 text-left">Pay</th>
+                <th class="px-3 py-2 text-left">Ket</th>
+                <th class="px-3 py-2 text-left">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="jobTable" class="bg-white"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </div>
 
-  <!-- MODAL TAMBAH ORANG -->
+  <!-- ADD PERSON MODAL -->
   <div id="addPersonModal" class="fixed inset-0 hidden items-center justify-center z-50">
     <div class="absolute inset-0 modal-bg"></div>
     <div class="relative bg-white rounded-lg shadow p-6 max-w-md w-full">
-      <h3 class="text-lg font-semibold mb-3">Tambah Kolom Baru</h3>
-      <input id="newPerson" placeholder="Nama kolom (contoh: Dinda)" class="w-full border p-2 rounded mb-3" />
+      <h3 class="text-lg font-semibold mb-3">Tambah Kolom Baru (Orang)</h3>
+      <input id="newPerson" placeholder="Nama (contoh: Dinda)" class="w-full border p-2 rounded mb-3" />
       <div class="flex justify-end gap-2">
         <button id="cancelPerson" class="border px-3 py-1 rounded">Batal</button>
         <button id="savePerson" class="bg-blue-600 text-white px-3 py-1 rounded">Simpan</button>
@@ -75,37 +103,59 @@
     </div>
   </div>
 
-  <!-- MODAL TAMBAH JOB -->
+  <!-- ADD / EDIT JOB MODAL -->
   <div id="addJobModal" class="fixed inset-0 hidden items-center justify-center z-50">
     <div class="absolute inset-0 modal-bg"></div>
-    <div class="relative bg-white rounded-lg shadow p-6 max-w-lg w-full">
-      <h3 class="text-lg font-semibold mb-3">Tambah Job Baru</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+    <div class="relative bg-white rounded-lg shadow p-6 max-w-2xl w-full">
+      <h3 class="text-lg font-semibold mb-3"><span id="jobModalMode">Tambah Job Baru</span> — <span id="modalOwner"></span></h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
         <label class="text-xs text-gray-600">Tanggal
           <input id="jobTanggal" type="date" class="w-full border rounded p-2 mt-1" />
         </label>
+
         <label class="text-xs text-gray-600">Sosmed
           <select id="jobSosmed" class="w-full border rounded p-2 mt-1">
-            <option value="TikTok">TikTok</option>
-            <option value="IG">IG</option>
-            <option value="X">X</option>
-            <option value="YouTube">YouTube</option>
-            <option value="Email">Email</option>
+            <option>TikTok</option><option>IG</option><option>X</option><option>YouTube</option><option>Email</option>
           </select>
         </label>
-        <label class="text-xs text-gray-600">Jumlah Akun
-          <input id="jobJumlah" type="number" min="1" value="1" class="w-full border rounded p-2 mt-1" />
+
+        <label class="text-xs text-gray-600">Akun (jumlah)
+          <input id="jobAkun" type="number" min="1" value="1" class="w-full border rounded p-2 mt-1" />
         </label>
-        <label class="text-xs text-gray-600">Nama Job
-          <input id="jobNama" placeholder="Nama Job" class="w-full border rounded p-2 mt-1" />
+
+        <label class="text-xs text-gray-600 md:col-span-2">Nama Job
+          <input id="jobNama" placeholder="Nama job" class="w-full border rounded p-2 mt-1" />
         </label>
+
         <label class="text-xs text-gray-600">Link Job
           <input id="jobLink" placeholder="https://..." class="w-full border rounded p-2 mt-1" />
         </label>
-        <label class="text-xs text-gray-600">Fee
+
+        <label class="text-xs text-gray-600">Group WA
+          <input id="jobGroup" placeholder="Link/ID group WA" class="w-full border rounded p-2 mt-1" />
+        </label>
+
+        <label class="text-xs text-gray-600">Handle
+          <input id="jobHandle" placeholder="@handle" class="w-full border rounded p-2 mt-1" />
+        </label>
+
+        <label class="text-xs text-gray-600">Fee (IDR)
           <input id="jobFee" type="number" min="0" value="0" class="w-full border rounded p-2 mt-1" />
         </label>
+
+        <label class="text-xs text-gray-600 md:col-span-3">Status Pembayaran
+          <select id="jobStatus" class="w-full border rounded p-2 mt-1">
+            <option value="Belum">Belum dibayar</option>
+            <option value="Sudah">Sudah dibayar</option>
+          </select>
+        </label>
+
+        <label class="text-xs text-gray-600 md:col-span-3">Keterangan (Ket)
+          <input id="jobKet" placeholder="Keterangan tambahan..." class="w-full border rounded p-2 mt-1" />
+        </label>
       </div>
+
       <div class="flex justify-end gap-2">
         <button id="cancelJob" class="border px-3 py-1 rounded">Batal</button>
         <button id="saveJob" class="bg-green-600 text-white px-3 py-1 rounded">Simpan</button>
@@ -114,170 +164,300 @@
   </div>
 
   <script>
-    const ADMIN_PASS = "1234";
-    const KEY = "jobDashboard_v6";
-    let data = JSON.parse(localStorage.getItem(KEY) || "null") || {
-      Nonov: [
-        { tanggal: "2025-09-20", sosmed: "TikTok", jumlah: 1, nama: "Review Produk A", link: "", fee: 500000, status: false },
-      ],
-      Laras: [],
-      Yakisa: []
-    };
+    // ===== CONFIG =====
+    const ADMIN_PASS = "L"; // <-- sandi admin sesuai permintaan
+    const STORAGE_KEY = "jobDashboard_final_v1";
 
-    const cards = document.getElementById("cards");
+    // ===== INITIAL DATA =====
+    let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (!data) {
+      data = {
+        Nonov: [
+          { tanggal: "2025-09-20", sosmed: "TikTok", akun: 1, job: "Review Produk A", link: "", group: "", handle: "nonov", fee: 500000, total: 500000, status: false, ket: "" }
+        ],
+        Laras: [],
+        Yakisa: []
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // ===== UI refs =====
+    const cardsWrap = document.getElementById("cards");
     const dashboard = document.getElementById("dashboard");
     const jobPage = document.getElementById("jobPage");
     const backBtn = document.getElementById("backBtn");
-    const personName = document.getElementById("personName");
+    const personNameEl = document.getElementById("personName");
+    const personMeta = document.getElementById("personMeta");
     const jobTable = document.getElementById("jobTable");
+    const totalAllEl = document.getElementById("totalAll");
     const addJobIcon = document.getElementById("addJobIcon");
-    const deletePerson = document.getElementById("deletePerson");
-    const totalFee = document.getElementById("totalFee");
+    const deletePersonIcon = document.getElementById("deletePerson");
 
+    // modals
     const addPersonModal = document.getElementById("addPersonModal");
-    const newPerson = document.getElementById("newPerson");
+    const newPersonInput = document.getElementById("newPerson");
     const cancelPerson = document.getElementById("cancelPerson");
     const savePerson = document.getElementById("savePerson");
 
     const addJobModal = document.getElementById("addJobModal");
+    const jobModalMode = document.getElementById("jobModalMode");
+    const modalOwner = document.getElementById("modalOwner");
     const jobTanggal = document.getElementById("jobTanggal");
     const jobSosmed = document.getElementById("jobSosmed");
-    const jobJumlah = document.getElementById("jobJumlah");
+    const jobAkun = document.getElementById("jobAkun");
     const jobNama = document.getElementById("jobNama");
     const jobLink = document.getElementById("jobLink");
+    const jobGroup = document.getElementById("jobGroup");
+    const jobHandle = document.getElementById("jobHandle");
     const jobFee = document.getElementById("jobFee");
+    const jobStatus = document.getElementById("jobStatus");
+    const jobKet = document.getElementById("jobKet");
     const cancelJob = document.getElementById("cancelJob");
     const saveJob = document.getElementById("saveJob");
 
+    // zoom controls
+    const zoomInBtn = document.getElementById("zoomIn");
+    const zoomOutBtn = document.getElementById("zoomOut");
+    const zoomResetBtn = document.getElementById("zoomReset");
+
     let current = null;
+    let editIndex = null;
+    let uiScale = 1;
 
-    function formatRupiah(num){ return "Rp " + Number(num).toLocaleString("id-ID"); }
+    // ===== HELPERS =====
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    function formatRupiah(n){ return "Rp " + (Number(n||0)).toLocaleString('id-ID'); }
+    function updateTotalAll() {
+      if (!current) return;
+      const tot = (data[current] || []).reduce((s, item) => s + (Number(item.total)||0), 0);
+      totalAllEl.textContent = `Total: ${formatRupiah(tot)}`;
+    }
 
-    function renderDashboard() {
-      cards.innerHTML = "";
+    // ===== DASHBOARD RENDER =====
+    function renderDashboard(){
+      cardsWrap.innerHTML = "";
       Object.keys(data).forEach(name => {
         const div = document.createElement("div");
         div.className = "bg-white rounded-xl shadow p-4 flex flex-col justify-between hover:shadow-md";
         div.innerHTML = `
           <div>
-            <h3 class="text-lg font-semibold">${name}</h3>
-            <p class="text-sm text-gray-500">${data[name].length} job</p>
+            <h3 class="text-lg font-semibold clickable" onclick="openJobs('${escapeHtml(name)}')">${escapeHtml(name)}</h3>
+            <p class="text-sm text-gray-500 mt-1">${data[name].length} job</p>
           </div>
-          <div class="flex justify-between items-center mt-4">
-            <span class="text-red-500 text-xl icon-btn" onclick="deleteColumn('${name}')">🗑️</span>
-            <button class="bg-blue-600 text-white rounded px-3 py-1 text-sm" onclick="openJobs('${name}')">Buka</button>
-          </div>`;
-        cards.appendChild(div);
+          <div class="flex items-center justify-between mt-4">
+            <span class="text-red-500 text-xl icon-btn" title="Hapus kolom" onclick="onDeletePersonClick('${escapeHtml(name)}', event)">🗑️</span>
+            <button class="bg-indigo-600 text-white rounded px-3 py-1 text-sm" onclick="openJobs('${escapeHtml(name)}')">Buka</button>
+          </div>
+        `;
+        cardsWrap.appendChild(div);
       });
+
+      // add-card
       const addCard = document.createElement("div");
       addCard.className = "border-2 border-dashed rounded-xl p-6 flex items-center justify-center cursor-pointer hover:bg-gray-50";
       addCard.innerHTML = `<div class="text-center"><div class="text-3xl text-gray-400">+</div><p class="text-sm text-gray-500 mt-1">Tambah Kolom</p></div>`;
-      addCard.onclick = () => addPersonModal.classList.replace("hidden","flex");
-      cards.appendChild(addCard);
+      addCard.onclick = () => {
+        newPersonInput.value = "";
+        addPersonModal.classList.replace("hidden","flex");
+      };
+      cardsWrap.appendChild(addCard);
     }
 
+    // ===== OPEN PERSON (JOB PAGE) =====
     function openJobs(name){
       current = name;
+      personNameEl.textContent = name;
+      personMeta.textContent = `${data[name].length} job`;
       dashboard.classList.add("hidden");
       jobPage.classList.remove("hidden");
-      personName.textContent = name;
       renderJobs();
+      updateTotalAll();
+      // smooth CSS slide (we keep simple show/hide since earlier UI uses hidden classes)
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // ===== RENDER JOBS =====
     function renderJobs(){
-      const list = data[current];
+      // jobTable is <tbody> element
       jobTable.innerHTML = "";
-      list.forEach((j,i)=>{
+      (data[current] || []).forEach((item, idx) => {
         const tr = document.createElement("tr");
         tr.className = "row-alt";
+        const totalFormatted = formatRupiah(item.total);
         tr.innerHTML = `
-          <td class="px-3 py-2">${i+1}</td>
-          <td class="px-3 py-2">${j.tanggal||""}</td>
-          <td class="px-3 py-2">${j.sosmed||""}</td>
-          <td class="px-3 py-2">${j.jumlah}</td>
-          <td class="px-3 py-2">${j.nama}</td>
-          <td class="px-3 py-2">${j.link ? `<a href="${j.link}" target="_blank" class="underline text-blue-600">Lihat</a>` : "-"}</td>
-          <td class="px-3 py-2">${formatRupiah(j.fee)}</td>
+          <td class="px-3 py-2">${idx+1}</td>
+          <td class="px-3 py-2">${item.tanggal||''}</td>
+          <td class="px-3 py-2">${escapeHtml(item.sosmed||'')}</td>
+          <td class="px-3 py-2">${item.akun}</td>
+          <td class="px-3 py-2 text-left">${escapeHtml(item.job||'')}</td>
+          <td class="px-3 py-2">${item.link ? `<a href="${item.link}" target="_blank" class="underline text-indigo-600">Lihat</a>` : '-'}</td>
+          <td class="px-3 py-2">${escapeHtml(item.group||'')}</td>
+          <td class="px-3 py-2">${escapeHtml(item.handle||'')}</td>
+          <td class="px-3 py-2">${formatRupiah(item.fee)}</td>
+          <td class="px-3 py-2">${totalFormatted}</td>
           <td class="px-3 py-2 text-center">
-            <span class="icon-btn text-lg ${j.status ? 'text-green-600' : 'text-gray-400'}" onclick="togglePay(${i})">${j.status ? '✅' : '❌'}</span>
+            <span class="icon-btn text-lg ${item.status ? 'text-green-600' : 'text-gray-400'}" onclick="onTogglePay(${idx})">${item.status ? '✅' : '❌'}</span>
           </td>
+          <td class="px-3 py-2">${escapeHtml(item.ket||'')}</td>
           <td class="px-3 py-2 text-center">
-            <span class="text-red-500 text-lg icon-btn" onclick="deleteJob(${i})">🗑️</span>
-          </td>`;
+            <button class="icon-btn mr-2" title="Edit job" onclick="onEditJob(${idx})">✏️</button>
+            <button class="icon-btn text-red-500" title="Hapus job" onclick="onDeleteJob(${idx})">🗑️</button>
+          </td>
+        `;
         jobTable.appendChild(tr);
       });
-      updateTotal();
+      updateTotalAll();
     }
 
-    function updateTotal(){
-      const total = data[current].reduce((a,b)=>a + (Number(b.fee)||0),0);
-      totalFee.textContent = `Total: ${formatRupiah(total)}`;
-    }
-
-    function saveData(){ localStorage.setItem(KEY, JSON.stringify(data)); }
-
-    function deleteColumn(name){
-      const pass = prompt("Masukkan sandi admin:");
-      if(pass!==ADMIN_PASS) return alert("Sandi salah");
-      if(confirm(`Hapus kolom ${name}?`)){ delete data[name]; saveData(); renderDashboard(); }
-    }
-
-    function deleteJob(i){
-      const pass = prompt("Masukkan sandi admin:");
-      if(pass!==ADMIN_PASS) return alert("Sandi salah");
-      if(confirm("Hapus job ini?")){ data[current].splice(i,1); saveData(); renderJobs(); }
-    }
-
-    function togglePay(i){
-      const pass = prompt("Masukkan sandi admin untuk ubah status:");
-      if(pass!==ADMIN_PASS) return alert("Sandi salah");
-      data[current][i].status = !data[current][i].status;
-      saveData(); renderJobs();
-    }
-
+    // ===== ADD PERSON HANDLERS =====
     cancelPerson.onclick = ()=> addPersonModal.classList.replace("flex","hidden");
     savePerson.onclick = ()=>{
-      const n = newPerson.value.trim();
-      if(!n) return alert("Nama wajib diisi");
-      if(data[n]) return alert("Kolom sudah ada");
-      data[n]=[]; saveData(); addPersonModal.classList.replace("flex","hidden"); renderDashboard();
-    }
+      const n = newPersonInput.value.trim();
+      if (!n) return alert("Nama wajib diisi");
+      if (data[n]) return alert("Nama sudah ada");
+      data[n] = [];
+      save();
+      addPersonModal.classList.replace("flex","hidden");
+      renderDashboard();
+    };
 
+    // ===== ADD JOB HANDLERS =====
     addJobIcon.onclick = ()=>{
-      jobTanggal.value = new Date().toISOString().slice(0,10);
-      jobSosmed.value="TikTok";
-      jobJumlah.value=1; jobNama.value=""; jobLink.value=""; jobFee.value=0;
-      addJobModal.classList.replace("hidden","flex");
+      if (!current) return alert("Pilih orang dulu");
+      openAddJobModal();
     };
     cancelJob.onclick = ()=> addJobModal.classList.replace("flex","hidden");
+
+    function openAddJobModal() {
+      editIndex = null;
+      jobModalMode.textContent = "Tambah Job Baru";
+      modalOwner.textContent = current;
+      jobTanggal.value = new Date().toISOString().slice(0,10);
+      jobSosmed.value = "TikTok";
+      jobAkun.value = 1;
+      jobNama.value = "";
+      jobLink.value = "";
+      jobGroup.value = "";
+      jobHandle.value = "";
+      jobFee.value = 0;
+      jobStatus.value = "Belum";
+      jobKet.value = "";
+      addJobModal.classList.replace("hidden","flex");
+    }
+
+    // Save add or edit
     saveJob.onclick = ()=>{
-      if(!jobTanggal.value || !jobNama.value.trim()) return alert("Tanggal & Nama wajib");
-      data[current].push({
-        tanggal:jobTanggal.value,
-        sosmed:jobSosmed.value,
-        jumlah:Number(jobJumlah.value),
-        nama:jobNama.value.trim(),
-        link:jobLink.value.trim(),
-        fee:Number(jobFee.value),
-        status:false
-      });
-      saveData();
+      const tanggal = jobTanggal.value;
+      const sosmed = jobSosmed.value;
+      const akun = Number(jobAkun.value || 0);
+      const jobName = jobNama.value.trim();
+      const link = jobLink.value.trim();
+      const group = jobGroup.value.trim();
+      const handle = jobHandle.value.trim();
+      const fee = Number(jobFee.value || 0);
+      const status = jobStatus.value === "Sudah";
+      const ket = jobKet.value.trim();
+      if (!tanggal || !jobName) return alert("Tanggal dan Nama job wajib diisi");
+      const total = akun * fee;
+
+      if (editIndex === null) {
+        data[current].push({ tanggal, sosmed, akun, job: jobName, link, group, handle, fee, total, status, ket });
+      } else {
+        // edit existing
+        data[current][editIndex] = { tanggal, sosmed, akun, job: jobName, link, group, handle, fee, total, status, ket };
+      }
+      save();
       addJobModal.classList.replace("flex","hidden");
       renderJobs();
     };
 
-    deletePerson.onclick = ()=>{
-      const pass = prompt("Masukkan sandi admin:");
-      if(pass!==ADMIN_PASS) return alert("Sandi salah");
-      if(confirm(`Hapus ${current}?`)){ delete data[current]; saveData(); backBtn.click(); }
+    // ===== EDIT JOB (requires pass first) =====
+    function onEditJob(idx) {
+      const pass = prompt("Masukkan sandi admin untuk edit job:");
+      if (pass !== ADMIN_PASS) return alert("Sandi salah");
+      editIndex = idx;
+      jobModalMode.textContent = "Edit Job";
+      modalOwner.textContent = current;
+      const job = data[current][idx];
+      jobTanggal.value = job.tanggal || new Date().toISOString().slice(0,10);
+      jobSosmed.value = job.sosmed || "TikTok";
+      jobAkun.value = job.akun || 1;
+      jobNama.value = job.job || "";
+      jobLink.value = job.link || "";
+      jobGroup.value = job.group || "";
+      jobHandle.value = job.handle || "";
+      jobFee.value = job.fee || 0;
+      jobStatus.value = job.status ? "Sudah" : "Belum";
+      jobKet.value = job.ket || "";
+      addJobModal.classList.replace("hidden","flex");
     }
 
+    // ===== DELETE PERSON =====
+    function onDeletePersonClick(name, ev){
+      ev.stopPropagation();
+      const pass = prompt("Masukkan sandi admin untuk hapus kolom:");
+      if (pass !== ADMIN_PASS) return alert("Sandi salah");
+      if (!confirm(`Hapus kolom ${name} dan seluruh job terkait?`)) return;
+      delete data[name];
+      save();
+      renderDashboard();
+      // if currently viewing deleted column, go back
+      if (current === name) {
+        backBtn.click();
+      }
+    }
+
+    // ===== DELETE JOB =====
+    function onDeleteJob(idx){
+      const pass = prompt("Masukkan sandi admin untuk hapus job:");
+      if (pass !== ADMIN_PASS) return alert("Sandi salah");
+      if (!confirm("Hapus job ini?")) return;
+      data[current].splice(idx,1);
+      save();
+      renderJobs();
+    }
+
+    // ===== TOGGLE PAY (with pass) =====
+    function onTogglePay(idx){
+      const pass = prompt("Masukkan sandi admin untuk ubah status pembayaran:");
+      if (pass !== ADMIN_PASS) return alert("Sandi salah");
+      data[current][idx].status = !data[current][idx].status;
+      save();
+      renderJobs();
+    }
+
+    // ===== ZOOM CONTROLS =====
+    zoomInBtn.onclick = ()=>{
+      uiScale = Math.min(1.8, +(uiScale + 0.1).toFixed(2));
+      document.documentElement.style.setProperty('--ui-scale', uiScale);
+    };
+    zoomOutBtn.onclick = ()=>{
+      uiScale = Math.max(0.6, +(uiScale - 0.1).toFixed(2));
+      document.documentElement.style.setProperty('--ui-scale', uiScale);
+    };
+    zoomResetBtn.onclick = ()=>{
+      uiScale = 1;
+      document.documentElement.style.setProperty('--ui-scale', uiScale);
+    };
+
+    // ===== BACK BUTTON =====
     backBtn.onclick = ()=>{
+      current = null;
       jobPage.classList.add("hidden");
       dashboard.classList.remove("hidden");
       renderDashboard();
-    }
+    };
 
+    // ===== SAVE & UTIL =====
+    function escapeHtml(s){ if(!s) return ""; return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+
+    // Expose minimal functions for inline onclick handlers
+    window.openJobs = openJobs;
+    window.onDeletePersonClick = onDeletePersonClick;
+    window.onDeleteJob = onDeleteJob;
+    window.onTogglePay = onTogglePay;
+
+    // Init
     renderDashboard();
   </script>
 </body>
