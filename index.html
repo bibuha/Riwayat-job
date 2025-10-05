@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Riwayat Job Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .modal-bg { background: rgba(0,0,0,0.2); }
+    .row-alt:nth-child(even) { background-color: #f9fafb; }
+    .icon-btn { cursor:pointer; transition:0.2s; }
+    .icon-btn:hover { transform:scale(1.1); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-pink-50 min-h-screen p-6">
+
+  <div class="max-w-6xl mx-auto">
+    <header class="text-center mb-6">
+      <h1 class="text-3xl font-bold">📋 Riwayat Job</h1>
+      <p class="text-gray-500 text-sm">Klik nama untuk buka detail job — semua tersimpan otomatis</p>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8"></div>
+    </section>
+
+    <!-- JOB PAGE -->
+    <section id="jobPage" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-2">
+          <button id="backBtn" class="text-sm border px-3 py-1 rounded">⬅️ Kembali</button>
+          <h2 id="personName" class="text-xl font-semibold"></h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <span id="totalFee" class="text-gray-700 font-medium"></span>
+            <span id="addJobIcon" class="text-2xl text-green-600 icon-btn">➕</span>
+          </div>
+          <span id="deletePerson" class="text-xl text-red-500 icon-btn">🗑️</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto bg-white rounded-lg shadow p-4">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-3 py-2 text-left">No</th>
+              <th class="px-3 py-2 text-left">Tanggal</th>
+              <th class="px-3 py-2 text-left">Sosmed</th>
+              <th class="px-3 py-2 text-left">Jumlah Akun</th>
+              <th class="px-3 py-2 text-left">Nama Job</th>
+              <th class="px-3 py-2 text-left">Link Job</th>
+              <th class="px-3 py-2 text-left">Fee</th>
+              <th class="px-3 py-2 text-left">Konfirmasi</th>
+              <th class="px-3 py-2 text-left">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="jobTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL TAMBAH ORANG -->
+  <div id="addPersonModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 modal-bg"></div>
+    <div class="relative bg-white rounded-lg shadow p-6 max-w-md w-full">
+      <h3 class="text-lg font-semibold mb-3">Tambah Kolom Baru</h3>
+      <input id="newPerson" placeholder="Nama kolom (contoh: Dinda)" class="w-full border p-2 rounded mb-3" />
+      <div class="flex justify-end gap-2">
+        <button id="cancelPerson" class="border px-3 py-1 rounded">Batal</button>
+        <button id="savePerson" class="bg-blue-600 text-white px-3 py-1 rounded">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH JOB -->
+  <div id="addJobModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 modal-bg"></div>
+    <div class="relative bg-white rounded-lg shadow p-6 max-w-lg w-full">
+      <h3 class="text-lg font-semibold mb-3">Tambah Job Baru</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+        <label class="text-xs text-gray-600">Tanggal
+          <input id="jobTanggal" type="date" class="w-full border rounded p-2 mt-1" />
+        </label>
+        <label class="text-xs text-gray-600">Sosmed
+          <select id="jobSosmed" class="w-full border rounded p-2 mt-1">
+            <option value="TikTok">TikTok</option>
+            <option value="IG">IG</option>
+            <option value="X">X</option>
+            <option value="YouTube">YouTube</option>
+            <option value="Email">Email</option>
+          </select>
+        </label>
+        <label class="text-xs text-gray-600">Jumlah Akun
+          <input id="jobJumlah" type="number" min="1" value="1" class="w-full border rounded p-2 mt-1" />
+        </label>
+        <label class="text-xs text-gray-600">Nama Job
+          <input id="jobNama" placeholder="Nama Job" class="w-full border rounded p-2 mt-1" />
+        </label>
+        <label class="text-xs text-gray-600">Link Job
+          <input id="jobLink" placeholder="https://..." class="w-full border rounded p-2 mt-1" />
+        </label>
+        <label class="text-xs text-gray-600">Fee
+          <input id="jobFee" type="number" min="0" value="0" class="w-full border rounded p-2 mt-1" />
+        </label>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="cancelJob" class="border px-3 py-1 rounded">Batal</button>
+        <button id="saveJob" class="bg-green-600 text-white px-3 py-1 rounded">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_PASS = "1234";
+    const KEY = "jobDashboard_v6";
+    let data = JSON.parse(localStorage.getItem(KEY) || "null") || {
+      Nonov: [
+        { tanggal: "2025-09-20", sosmed: "TikTok", jumlah: 1, nama: "Review Produk A", link: "", fee: 500000, status: false },
+      ],
+      Laras: [],
+      Yakisa: []
+    };
+
+    const cards = document.getElementById("cards");
+    const dashboard = document.getElementById("dashboard");
+    const jobPage = document.getElementById("jobPage");
+    const backBtn = document.getElementById("backBtn");
+    const personName = document.getElementById("personName");
+    const jobTable = document.getElementById("jobTable");
+    const addJobIcon = document.getElementById("addJobIcon");
+    const deletePerson = document.getElementById("deletePerson");
+    const totalFee = document.getElementById("totalFee");
+
+    const addPersonModal = document.getElementById("addPersonModal");
+    const newPerson = document.getElementById("newPerson");
+    const cancelPerson = document.getElementById("cancelPerson");
+    const savePerson = document.getElementById("savePerson");
+
+    const addJobModal = document.getElementById("addJobModal");
+    const jobTanggal = document.getElementById("jobTanggal");
+    const jobSosmed = document.getElementById("jobSosmed");
+    const jobJumlah = document.getElementById("jobJumlah");
+    const jobNama = document.getElementById("jobNama");
+    const jobLink = document.getElementById("jobLink");
+    const jobFee = document.getElementById("jobFee");
+    const cancelJob = document.getElementById("cancelJob");
+    const saveJob = document.getElementById("saveJob");
+
+    let current = null;
+
+    function formatRupiah(num){ return "Rp " + Number(num).toLocaleString("id-ID"); }
+
+    function renderDashboard() {
+      cards.innerHTML = "";
+      Object.keys(data).forEach(name => {
+        const div = document.createElement("div");
+        div.className = "bg-white rounded-xl shadow p-4 flex flex-col justify-between hover:shadow-md";
+        div.innerHTML = `
+          <div>
+            <h3 class="text-lg font-semibold">${name}</h3>
+            <p class="text-sm text-gray-500">${data[name].length} job</p>
+          </div>
+          <div class="flex justify-between items-center mt-4">
+            <span class="text-red-500 text-xl icon-btn" onclick="deleteColumn('${name}')">🗑️</span>
+            <button class="bg-blue-600 text-white rounded px-3 py-1 text-sm" onclick="openJobs('${name}')">Buka</button>
+          </div>`;
+        cards.appendChild(div);
+      });
+      const addCard = document.createElement("div");
+      addCard.className = "border-2 border-dashed rounded-xl p-6 flex items-center justify-center cursor-pointer hover:bg-gray-50";
+      addCard.innerHTML = `<div class="text-center"><div class="text-3xl text-gray-400">+</div><p class="text-sm text-gray-500 mt-1">Tambah Kolom</p></div>`;
+      addCard.onclick = () => addPersonModal.classList.replace("hidden","flex");
+      cards.appendChild(addCard);
+    }
+
+    function openJobs(name){
+      current = name;
+      dashboard.classList.add("hidden");
+      jobPage.classList.remove("hidden");
+      personName.textContent = name;
+      renderJobs();
+    }
+
+    function renderJobs(){
+      const list = data[current];
+      jobTable.innerHTML = "";
+      list.forEach((j,i)=>{
+        const tr = document.createElement("tr");
+        tr.className = "row-alt";
+        tr.innerHTML = `
+          <td class="px-3 py-2">${i+1}</td>
+          <td class="px-3 py-2">${j.tanggal||""}</td>
+          <td class="px-3 py-2">${j.sosmed||""}</td>
+          <td class="px-3 py-2">${j.jumlah}</td>
+          <td class="px-3 py-2">${j.nama}</td>
+          <td class="px-3 py-2">${j.link ? `<a href="${j.link}" target="_blank" class="underline text-blue-600">Lihat</a>` : "-"}</td>
+          <td class="px-3 py-2">${formatRupiah(j.fee)}</td>
+          <td class="px-3 py-2 text-center">
+            <span class="icon-btn text-lg ${j.status ? 'text-green-600' : 'text-gray-400'}" onclick="togglePay(${i})">${j.status ? '✅' : '❌'}</span>
+          </td>
+          <td class="px-3 py-2 text-center">
+            <span class="text-red-500 text-lg icon-btn" onclick="deleteJob(${i})">🗑️</span>
+          </td>`;
+        jobTable.appendChild(tr);
+      });
+      updateTotal();
+    }
+
+    function updateTotal(){
+      const total = data[current].reduce((a,b)=>a + (Number(b.fee)||0),0);
+      totalFee.textContent = `Total: ${formatRupiah(total)}`;
+    }
+
+    function saveData(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+    function deleteColumn(name){
+      const pass = prompt("Masukkan sandi admin:");
+      if(pass!==ADMIN_PASS) return alert("Sandi salah");
+      if(confirm(`Hapus kolom ${name}?`)){ delete data[name]; saveData(); renderDashboard(); }
+    }
+
+    function deleteJob(i){
+      const pass = prompt("Masukkan sandi admin:");
+      if(pass!==ADMIN_PASS) return alert("Sandi salah");
+      if(confirm("Hapus job ini?")){ data[current].splice(i,1); saveData(); renderJobs(); }
+    }
+
+    function togglePay(i){
+      const pass = prompt("Masukkan sandi admin untuk ubah status:");
+      if(pass!==ADMIN_PASS) return alert("Sandi salah");
+      data[current][i].status = !data[current][i].status;
+      saveData(); renderJobs();
+    }
+
+    cancelPerson.onclick = ()=> addPersonModal.classList.replace("flex","hidden");
+    savePerson.onclick = ()=>{
+      const n = newPerson.value.trim();
+      if(!n) return alert("Nama wajib diisi");
+      if(data[n]) return alert("Kolom sudah ada");
+      data[n]=[]; saveData(); addPersonModal.classList.replace("flex","hidden"); renderDashboard();
+    }
+
+    addJobIcon.onclick = ()=>{
+      jobTanggal.value = new Date().toISOString().slice(0,10);
+      jobSosmed.value="TikTok";
+      jobJumlah.value=1; jobNama.value=""; jobLink.value=""; jobFee.value=0;
+      addJobModal.classList.replace("hidden","flex");
+    };
+    cancelJob.onclick = ()=> addJobModal.classList.replace("flex","hidden");
+    saveJob.onclick = ()=>{
+      if(!jobTanggal.value || !jobNama.value.trim()) return alert("Tanggal & Nama wajib");
+      data[current].push({
+        tanggal:jobTanggal.value,
+        sosmed:jobSosmed.value,
+        jumlah:Number(jobJumlah.value),
+        nama:jobNama.value.trim(),
+        link:jobLink.value.trim(),
+        fee:Number(jobFee.value),
+        status:false
+      });
+      saveData();
+      addJobModal.classList.replace("flex","hidden");
+      renderJobs();
+    };
+
+    deletePerson.onclick = ()=>{
+      const pass = prompt("Masukkan sandi admin:");
+      if(pass!==ADMIN_PASS) return alert("Sandi salah");
+      if(confirm(`Hapus ${current}?`)){ delete data[current]; saveData(); backBtn.click(); }
+    }
+
+    backBtn.onclick = ()=>{
+      jobPage.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      renderDashboard();
+    }
+
+    renderDashboard();
+  </script>
+</body>
+</html>
